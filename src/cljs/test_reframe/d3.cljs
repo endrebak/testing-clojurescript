@@ -24,23 +24,33 @@
 ;; const y-accessor = d => d.temperatureMax
 ;; const x-accessor = d => d.date
 
+(def date-parser (.timeParse d3 "%Y-%m-%d"))
+
 (defn y-accessor [d]
-  (do
-    (js/console.log "y-accessor!!!!!")
-    (js/console.log d)
-    (js/console.log (.-temperatureMax d))
-    (.-temperatureMax d)))
+    (.-temperatureMax d))
 
 (defn x-accessor [d]
-  (.-date d))
+  (date-parser (.-date d)))
 
 (def y-scale (..
               (.scaleLinear d3)
               (domain
-               (.extent d3 app-state (clj->js y-accessor))) ;
+               (.extent d3 app-state y-accessor))
               (range #js [(dimensions :bounded-height) 0])))
-  ;; )
 
+
+(def x-scale (..
+              (.scaleLinear d3)
+              (domain
+               (.extent d3 app-state x-accessor))
+              (range #js [0 (dimensions :bounded-width)])))
+
+
+(def line-generator
+  (..
+   (.line d3)
+   (x #(-> % x-accessor x-scale))
+   (y #(-> % y-accessor y-scale))))
 
 
 (defn d3-inner [data]
@@ -58,7 +68,8 @@
                                  (append "g")
                                  (style "transform" (str "translate(" (margins :left) "px, " (margins :top) "px)"))
                                  (append "path")
-                                 (attr "d","M 0 0 L 500 0 L 100 100 L 0 50 Z")
+                                 (attr "d" (line-generator app-state))
+                                 ;; (attr "d","M 0 0 L 500 0 L 100 100 L 0 50 Z")
                                  )))
 
 

@@ -2,9 +2,8 @@
   (:require [shadow.resource :as rc]))
 
 (def app-state
-  (->> (rc/inline "./test.json")
-       (.parse js/JSON)
-       ))
+  (->> (rc/inline "./my_weather_data.json")
+       (.parse js/JSON)))
 
 
 
