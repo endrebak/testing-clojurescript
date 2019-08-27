@@ -1,62 +1,72 @@
 (ns test-reframe.d3
   (:require
    [cljs.test :as t :include-macros true]
+   ["d3" :as d3]
+   [test-reframe.db :refer [app-state]]
    [reagent.core :as reagent]))
 
-(defn inner [data]
+
+(def window-width (* js/window.innerWidth 0.9))
+
+(def margins
+  {:top 15
+   :right 15
+   :bottom 40
+   :left 60})
+
+
+(def dimensions
+  {:width window-width
+   :height 400
+   :bounded-width (- window-width (margins :left) (margins :right))
+   :bounded-height (- 400 (margins :top) (margins :bottom))})
+
+;; const y-accessor = d => d.temperatureMax
+;; const x-accessor = d => d.date
+
+(defn y-accessor [d]
+  (do
+    (js/console.log "y-accessor!!!!!")
+    (js/console.log d)
+    (js/console.log (.-temperatureMax d))
+    (.-temperatureMax d)))
+
+(defn x-accessor [d]
+  (.-date d))
+
+(def y-scale (..
+              (.scaleLinear d3)
+              (domain
+               (.extent d3 app-state (clj->js y-accessor))) ;
+              (range #js [(dimensions :bounded-height) 0])))
+  ;; )
+
+
+
+(defn d3-inner [data]
   (reagent/create-class
-   {:display-name "Counter"
+   {:reagent-render (fn [data] [:div#wrapper])
 
-    :component-did-mount (fn [data]
-                           (js/console.log "Initialized")
-                           [:h1 "Initialized! " data])
-
-
-    :component-did-update (fn [this _]
-                            (let [[_ data] (reagent/argv this)]
-                              (js/console.log (str "Updated " data))
-                              [:div (str "My clicks " data)]))
-
-    :reagent-render (fn [data] [:div (str "My clicks " data)])}))
-
-;; (defn my-component
-;;   [data]
-;;   (reagent/create-class                 ;; <-- expects a map of functions
-;;    {:display-name  "my-component"      ;; for more helpful warnings & errors
-
-;;     :component-did-mount               ;; the name of a lifecycle function
-;;     (fn [this]
-;;       (println "component-did-mount")) ;; your implementation
-
-;;     :component-did-update              ;; the name of a lifecycle function
-;;     (fn [this old-argv]                ;; reagent provides you the entire "argv", not just the "props"
-;;       (let [new-argv (rest (reagent/argv this))]
-;;         (do-something new-argv old-argv)))
-
-;;     ;; other lifecycle funcs can go in here
-;;     :reagent-render        ;; Note:  is not :render
-;;     (fn [x y z]           ;; remember to repeat parameters
-;;       [:div (str data)])}))
+    :component-did-mount (fn []
+                           (let [d3data (clj->js data)]
+                             (js/console.log (clj->js (first data)))
+                             (.. d3
+                                 (select "#wrapper")
+                                 (append "svg")
+                                 (attr "width" (dimensions :width))
+                                 (attr "height" (dimensions :height))
+                                 (append "g")
+                                 (style "transform" (str "translate(" (margins :left) "px, " (margins :top) "px)"))
+                                 (append "path")
+                                 (attr "d","M 0 0 L 500 0 L 100 100 L 0 50 Z")
+                                 )))
 
 
-
-
-;; (defn d3-inner [data]
-;;   (reagent/create-class
-;;    {:reagent-render (fn [] [:div [:svg {:width 400 :height 800}]])
-
-;;     :component-did-mount (fn []
-;;                            (let [d3data (clj->js data)]
-;;                              (.. js/d3
-;;                                  (select "svg")
-;;                                  (selectAll "circle")
-;;                                  )))
-
-
-;;     :component-did-update (fn [this]
-;;                             (let [[_ data] (reagent/argv this)
-;;                                   d3data (clj->js data)]
-;;                               (.. js/d3
-;;                                   (selectAll "circle")
-;;                                   (data d3data))))
-;;     }))
+    :component-did-update (fn [this]
+                            (let [[_ data] (reagent/argv this)
+                                  d3data (clj->js data)]
+                              (js/console.log "Update")
+                              (.. d3
+                                  (selectAll "circle")
+                                  (data d3data))))
+    }))

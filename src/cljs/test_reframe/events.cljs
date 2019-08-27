@@ -14,3 +14,9 @@
  ::click
  (fn [db _]
    (update-in db [:click] inc)))
+
+
+(re-frame/reg-event-db
+ ::shuffle
+ (fn [db _]
+   (update-in db [:data] shuffle)))

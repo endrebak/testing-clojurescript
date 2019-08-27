@@ -12,3 +12,9 @@
  ::click
  (fn [db]
    (:click db)))
+
+
+(re-frame/reg-sub
+ ::data
+ (fn [db]
+   (:data db)))

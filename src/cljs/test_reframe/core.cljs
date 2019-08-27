@@ -4,8 +4,7 @@
    [re-frame.core :as re-frame]
    [test-reframe.events :as events]
    [test-reframe.views :as views]
-   [test-reframe.config :as config]
-   [test-reframe.d3 :as d3]))
+   [test-reframe.config :as config]))
 
 
 (defn dev-setup []
