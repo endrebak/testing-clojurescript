@@ -6,6 +6,5 @@
        (.parse js/JSON)))
 
 
-
 (def default-db
   {:name "re-frame" :click 0 :data app-state})

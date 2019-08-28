@@ -21,8 +21,6 @@
    :bounded-width (- window-width (margins :left) (margins :right))
    :bounded-height (- 400 (margins :top) (margins :bottom))})
 
-;; const y-accessor = d => d.temperatureMax
-;; const x-accessor = d => d.date
 
 (def date-parser (.timeParse d3 "%Y-%m-%d"))
 
@@ -40,7 +38,7 @@
 
 
 (def x-scale (..
-              (.scaleLinear d3)
+              (.scaleTime d3)
               (domain
                (.extent d3 app-state x-accessor))
               (range #js [0 (dimensions :bounded-width)])))
@@ -53,24 +51,70 @@
    (y #(-> % y-accessor y-scale))))
 
 
+(def y-axis-generator
+  (..
+   (.axisLeft d3)
+   (scale y-scale)))
+
+
+(def x-axis-generator
+  (..
+   (.axisBottom d3)
+   (scale x-scale)))
+
+
+
+(defn wrapper
+  []
+  (.. d3
+      (select "#wrapper")
+      (append "svg")
+      (attr "width" (dimensions :width))
+      (attr "height" (dimensions :height))))
+
+(defn bounds
+  [wrapper]
+  (.. wrapper
+      (append "g")
+      (style "transform" (str "translate(" (margins :left) "px, " (margins :top) "px)"))))
+
+(defn x-axis
+  [bounds]
+  (js/console.log (str "translateY(" (dimensions :bounded-height) "px)"))
+  (.. bounds
+      (append "g")
+      (call x-axis-generator)
+      (style "transform" (str "translateY(" (dimensions :bounded-height) "px)"))))
+
+(defn y-axis
+  [bounds]
+  (..
+   bounds
+   (append "g")
+   (call y-axis-generator)))
+
+
+(defn graph
+  [bounds]
+  (.. bounds
+      (append "path")
+      (attr "d" (line-generator app-state))
+      (attr "fill" "none")
+      (attr "stroke" "#af9358")
+      (attr "stroke-width" 2)))
+
 (defn d3-inner [data]
   (reagent/create-class
    {:reagent-render (fn [data] [:div#wrapper])
 
-    :component-did-mount (fn []
-                           (let [d3data (clj->js data)]
-                             (js/console.log (clj->js (first data)))
-                             (.. d3
-                                 (select "#wrapper")
-                                 (append "svg")
-                                 (attr "width" (dimensions :width))
-                                 (attr "height" (dimensions :height))
-                                 (append "g")
-                                 (style "transform" (str "translate(" (margins :left) "px, " (margins :top) "px)"))
-                                 (append "path")
-                                 (attr "d" (line-generator app-state))
-                                 ;; (attr "d","M 0 0 L 500 0 L 100 100 L 0 50 Z")
-                                 )))
+    :component-did-mount (fn [data]
+                           (let [wrapper (wrapper)
+                                 bounds (bounds wrapper)
+                                 graph (graph bounds)
+                                 _ (x-axis bounds)
+                                 _ (y-axis bounds)
+                                 ])
+                           graph)
 
 
     :component-did-update (fn [this]
