@@ -1,11 +1,10 @@
-(ns test-reframe.core
+(ns scatterplot-chap-1.core
   (:require
    [reagent.core :as reagent]
    [re-frame.core :as re-frame]
-   [test-reframe.events :as events]
-   [test-reframe.views :as views]
-   [test-reframe.config :as config]))
-
+   [scatterplot-chap-1.events :as events]
+   [scatterplot-chap-1.views :as views]
+   [scatterplot-chap-1.config :as config]))
 
 
 (defn dev-setup []
