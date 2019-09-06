@@ -4,10 +4,10 @@
              [reagent.core :as reagent]
              ["d3" :as d3]))
 
+(enable-console-print!)
+
 (defn metric-accessor [d]
-  (do
-    (println (.-humidity d))
-    (.-humidity d)))
+    (.-humidity d))
 
 (def width 600)
 
@@ -50,8 +50,8 @@
   (let [bins
         (..
             (.histogram d3)
-            (domain (.domain (x-scale dataset)))
             (value metric-accessor)
+            (domain (.domain (x-scale dataset)))
             (thresholds 12))]
     (bins dataset)))
 
