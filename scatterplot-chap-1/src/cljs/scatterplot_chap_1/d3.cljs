@@ -29,6 +29,10 @@
   (.-humidity d))
 
 
+(defn color-accessor [d]
+  (println (str "Cloud cover: " (.-cloudCover d)))
+  (.-cloudCover d))
+
 (def x-scale (..
               (.scaleLinear d3)
               (domain (.extent d3 app-state x-accessor))
@@ -43,6 +47,12 @@
               (range #js [(dimensions :bounded-height) 0])
               nice))
 
+
+(def color-scale (..
+              (.scaleLinear d3)
+              (domain (.extent d3 app-state color-accessor))
+              (range #js ["skyblue" "darkslategrey"])
+              nice))
 
 (def x-axis-generator
   (.. d3
@@ -76,9 +86,8 @@
       (append "circle")
       (attr "cx" #(-> % x-accessor x-scale))
       (attr "cy" #(-> % y-accessor y-scale))
-      (attr "r" 5)
-      (attr "fill" color)
-      ))
+      (attr "r" 10)
+      (attr "fill" #(-> % color-accessor color-scale))))
 
 
 (defn x-axis [bounds]
